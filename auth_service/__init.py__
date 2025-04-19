@@ -1,0 +1,10 @@
+import os
+from services.auth_service import AuthService
+from services.ldap_auth_service import LDAPAuthService
+from utils.jwt_provider import JWTProvider
+
+def get_auth_service():
+    ldap_service = LDAPAuthService()
+    jwt_provider = JWTProvider(secret=os.getenv("JWT_SECRET", "super_secret_key"))
+    return AuthService(ldap_service, ldap_service, jwt_provider)
+

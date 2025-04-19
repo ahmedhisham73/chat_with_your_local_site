@@ -1,0 +1,12 @@
+users:
+  - username: admin
+    password: admin123
+    roles:
+      - admin
+      - user
+
+  - username: ahmed
+    password: mypass
+    roles:
+      - user
+

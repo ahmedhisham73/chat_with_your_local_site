@@ -1,0 +1,6 @@
+Flask
+ldap3
+PyJWT
+python-dotenv
+PyYAML
+prometheus_client

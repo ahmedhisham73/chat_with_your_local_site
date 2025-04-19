@@ -1,0 +1,22 @@
+{
+  "name": "summarize_page",
+  "description": "Summarize a public webpage from a URL",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "description": "The target URL to summarize"
+      }
+    },
+    "required": ["url"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "summary": {
+        "type": "string"
+      }
+    }
+  }
+}

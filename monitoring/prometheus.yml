@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'auth_service'
+    static_configs:
+      - targets: ['auth_service:5007']
+
+  - job_name: 'mcp_service'
+    static_configs:
+      - targets: ['mcp_service:8787']
+
