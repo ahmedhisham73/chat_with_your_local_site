@@ -297,3 +297,4 @@ node_modules/
 frontend/frontend/.vite
 
 >>>>>>> 9af843417c8fc5612eb1b8c82af4e1fde438de7e
+.env

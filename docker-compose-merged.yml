@@ -22,6 +22,7 @@ services:
       - FLASK_ENV=development
     volumes:
       - ./mcp_service:/app
+      - ./LLM_service:/home/ahmedetsh/Desktop/LLM_MCP/LLM_service
     networks:
       - shared_net
 
@@ -34,7 +35,7 @@ services:
       - ./auth_service/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./auth_service/nginx/proxy_params:/etc/nginx/proxy_params:ro
       - ./auth_service/certs:/etc/nginx/certs:ro
-      - ./frontend/dist:/usr/share/nginx/html:ro
+      - ./frontend/dist:/usr/share/nginx/html
     depends_on:
       - auth_service
       - mcp_service
@@ -65,5 +66,6 @@ services:
 
 networks:
   shared_net:
-    driver: bridge
+    external: true
+    name: llm_mcp_shared_net
 

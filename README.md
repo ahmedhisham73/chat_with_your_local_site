@@ -3,7 +3,7 @@
 A complete secure local AI-based chatbot system with:
 
 - Frontend built using **React** (no Tailwind)
-- Backend services (Auth + MCP for summarization)
+- Backend services (Auth + MCP for summarization + LLM)
 - Full Dockerized deployment with NGINX + TLS + Monitoring
 
 ---
@@ -12,117 +12,146 @@ A complete secure local AI-based chatbot system with:
 
 - ✅ JWT-based Login Authentication
 - ✅ Protected Routing (`/page_1`)
-- ✅ Responsive Layout (Sidebar + Content + Chatbot)
-- ✅ Info panel (e.g. history, articles...)
-- ✅ Chatbot-ready interface for integration
+- ✅ Responsive Layout (Sidebar + Content + EgyptBot Chatbot)
+- ✅ Chatbot supports both **OpenAI** and **LLaMA.cpp**
 - ✅ HTTPS with TLS (NGINX reverse proxy)
 - ✅ Prometheus + Grafana Monitoring
-- ✅ Logging in structured JSON format
-- ❌ No Tailwind / No Bootstrap — just clean custom CSS
+- ✅ Structured JSON logging (Nginx)
+- ✅ No Tailwind or Bootstrap — clean manual CSS
 
 ---
 
 ## 🏗️ Tech Stack
 
-- React + Vite + Vanilla CSS
-- Flask (Auth & MCP microservices)
-- NGINX (TLS + Routing + Rate Limiting)
+- React + Vite
+- Flask (Auth + MCP)
+- OpenAI API + llama.cpp integration
+- NGINX (TLS, HTTP2, Reverse Proxy, Rate Limiting)
 - Prometheus + Grafana (Monitoring)
-- Docker Compose (Multi-service deployment)
+- Docker Compose (isolated services, single network)
 
 ---
 
-## 📦 MCP Service (Summarization Endpoint)
+## 🔑 Pages
 
-- Endpoint: `/invoke/summarize`
-- Method: `POST`
-- Example Payload:
+| Route       | Description                              |
+|-------------|------------------------------------------|
+| `/login`    | JWT-based login page                     |
+| `/page_1`   | Protected page with static Egypt history + EgyptBot |
+| `/tools`    | Dynamic tool metadata tester (RAG-friendly)
+
+---
+
+## 🧠 Chatbot Integration
+
+- Located inside `Page1.jsx`
+- Supports **model switching** between:
+  - `openai`
+  - `llamacpp`
+- Dynamic prompt sent to unified backend `/invoke/llm`
+- Sample JSON payload:
   ```json
   {
     "input": {
-      "url": "https://en.wikipedia.org/wiki/History_of_Egypt"
+      "prompt": "من هو رمسيس الثاني؟",
+      "model": "llamacpp"
     }
   }
   ```
-- Returns JSON summary.
 
 ---
 
-## 🔍 Monitoring
+## ⚙️ Backend Endpoints
 
-- Prometheus scrapes metrics from:
-  - `auth_service:5007/metrics`
-  - `mcp_service:8787/metrics`
-- Metrics exposed via `prometheus_client` in each service
-- Grafana preconfigured via provisioning
-- Custom metric: `auth_requests_total` defined in Auth service
+### 🔹 `/invoke/llm` (POST)
+Unified LLM endpoint
+
+| Field     | Type   | Description          |
+|-----------|--------|----------------------|
+| prompt    | string | User input           |
+| model     | string | "openai" or "llamacpp" |
+
+Returns:
+```json
+{
+  "backend": "llamacpp",
+  "response": "..."
+}
+```
 
 ---
 
-## 🔐 Default Credentials (for testing)
+### 🔹 `/tool-metadata.json` (GET)
+Returns JSON metadata used in `/tools` page for dynamic tool rendering.
+
+### 🔹 `/metrics` (GET)
+Exposes Prometheus metrics for `auth_service` and `mcp_service`.
+
+---
+
+## 🧩 Directory Structure
+
+```
+LLM_MCP/
+├── auth_service/           # Login / JWT
+├── mcp_service/            # Summarization & LLM API
+├── LLM_service/            # llama.cpp backend, models, logic
+├── frontend/               # React app with EgyptBot
+├── monitoring/             # Prometheus + Grafana provisioning
+├── docker-compose-merged.yml
+```
+
+---
+
+## 🔐 Docker & Network
+
+- All services share the `shared_net` (bridge network)
+- NGINX acts as HTTPS reverse proxy
+- Mounted frontend `dist/` inside NGINX as root
+- Rate limiting, gzip compression, and security headers enabled
+
+---
+
+## ⚠️ Notes
+
+- `.env` **is no longer required** in frontend (`REACT_APP_MCP_HOST` was removed)
+- API routing now uses `https://localhost/invoke/llm`
+- NGINX TLS cert path: `./auth_service/certs/`
+- No Tailwind; pure CSS via `Page1.css`
+
+---
+
+## 🚀 Run Locally
+
+```bash
+# Build frontend:
+cd frontend
+npm install
+npm run build
+
+# Go back and run all services:
+cd ..
+docker compose -f docker-compose-merged.yml up --build
+```
+
+---
+
+## 🔎 Access
+
+| Component     | URL                    |
+|---------------|------------------------|
+| Frontend      | https://localhost      |
+| Grafana       | http://localhost:3000  |
+| Prometheus    | http://localhost:9090  |
+| Backend (API) | proxied via NGINX      |
+
+---
+
+## ✅ Default Login (for testing)
 
 | Username | Password   |
 |----------|------------|
 | `admin`  | `admin123` |
-
----
-
-## 🧠 Pages
-
-| Route       | Description                   |
-|-------------|-------------------------------|
-| `/login`    | Login form with JWT storage   |
-| `/page_1`   | Protected page with content + chatbot |
-
----
-
-## 🧩 Project Structure
-
-```
-root/
-├── auth_service/               # Flask Auth Service (with metrics)
-├── mcp_service/                # Summarization backend (MCP)
-├── frontend/                   # React frontend
-├── nginx/                      # NGINX config + TLS certs
-├── monitoring/                 # Prometheus + Grafana provisioning
-├── docker-compose-merged.yml  # Full deployment
-```
-
----
-
-## ⚙️ NGINX Enhancements
-
-- TLS with self-signed certs
-- JSON logs (`/var/log/nginx/access.log`)
-- Rate Limiting (ready to enable)
-- Caching headers for static files
-- Secure upstream routing for `/auth/` and `/invoke/`
-
----
-
-## 🧠 Ahmed Notes
-
-- All services run on a shared Docker bridge network
-- JWT tokens stored in `localStorage`
-- Frontend React served at `/`
-- Backend:
-  - Auth service routed via `/auth/`
-  - MCP service routed via `/invoke/`
-- `/metrics` added for Prometheus scraping in both services
-
----
-
-## 🚀 Usage
-
-```bash
-# Start all services:
-docker-compose -f docker-compose-merged.yml up --build
-
-# Visit:
-Frontend: https://localhost
-Grafana: http://localhost:3000
-Prometheus: http://localhost:9090
-```
 
 ---
 

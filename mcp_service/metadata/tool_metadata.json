@@ -1,22 +1,60 @@
-{
-  "name": "summarize_page",
-  "description": "Summarize a public webpage from a URL",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "url": {
-        "type": "string",
-        "description": "The target URL to summarize"
-      }
+[
+  {
+    "name": "summarize_page",
+    "description": "Summarize a public webpage from a URL",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The target URL to summarize"
+        }
+      },
+      "required": ["url"]
     },
-    "required": ["url"]
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string"
+        }
+      }
+    }
   },
-  "output_schema": {
-    "type": "object",
-    "properties": {
-      "summary": {
-        "type": "string"
+  {
+    "name": "llm_query",
+    "description": "Query an LLM model (OpenAI or TinyLLaMA) via a unified interface",
+    "type": "llm",
+    "endpoint": "/invoke/llm",
+    "method": "POST",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "description": "The prompt to send to the LLM"
+        },
+        "model": {
+          "type": "string",
+          "description": "The model to use (openai or llamacpp)",
+          "enum": ["openai", "llamacpp"]
+        }
+      },
+      "required": ["prompt", "model"]
+    },
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "backend": {
+          "type": "string",
+          "description": "The model backend used"
+        },
+        "response": {
+          "type": "string",
+          "description": "The LLM response"
+        }
       }
     }
   }
-}
+]
+
